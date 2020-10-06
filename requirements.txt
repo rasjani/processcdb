@@ -1,0 +1,3 @@
+whatthepatch
+GitPython
+gitdb2

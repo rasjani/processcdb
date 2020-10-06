@@ -1,9 +1,7 @@
-#!/usr/bin/env python2
-
 import argparse
 import os
 import json
-from lib.cdb_tools import ClangTidy, CppCheck, Lizard, Clang, remove_untouched_files, remove_dupes
+from .cdb_tools import ClangTidy, CppCheck, Lizard, Clang, remove_untouched_files, remove_dupes
 
 tools = {
     "clang-tidy": ClangTidy("clang-tidy"),

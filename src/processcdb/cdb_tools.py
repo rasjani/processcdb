@@ -15,12 +15,8 @@ import glob
 import shutil
 import platform
 
-extras_imported = True
-try:
-    from whatthepatch import parse_patch
-    from git import Repo
-except:
-    extras_imported = False
+from whatthepatch import parse_patch
+from git import Repo
 
 
 def is_windows():
@@ -52,10 +48,6 @@ def remove_untouched_files(cdb, commits):
 
     def line_numbers(data):
         return data[1]
-
-    if not extras_imported:
-        print("pip -r requirements.txt is required to run this portion of the code")
-        return cdb
 
     patch = None
     repo = Repo("../..")

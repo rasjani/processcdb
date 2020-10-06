@@ -1,0 +1,4 @@
+include requirements.txt CHANGELOG README.md LICENSE
+exclude .gitignore
+include versioneer.py
+include src/ProcessCDB/_version.py

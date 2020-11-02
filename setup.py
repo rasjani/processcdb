@@ -28,7 +28,6 @@ Topic :: Software Development :: Testing
 Framework :: Robot Framework
 Framework :: Robot Framework :: Library
 """.strip().splitlines()
-
 setup(
     name="processcdb",
     version=versioneer.get_version(),

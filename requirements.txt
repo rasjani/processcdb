@@ -1,0 +1,4 @@
+whatthepatch
+GitPython
+gitdb2
+appdirs

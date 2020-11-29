@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
 """
-SeleniumTestability
+processcdb
 """
 import versioneer
 from os.path import abspath, dirname, join
 from setuptools import setup
 
-LIBRARY_NAME = "SeleniumTestability"
 CWD = abspath(dirname(__file__))
 with open(join(CWD, "requirements.txt"), encoding="utf-8") as f:
     REQUIREMENTS = f.read().splitlines()
@@ -23,30 +22,29 @@ Operating System :: OS Independent
 License :: OSI Approved :: Apache Software License
 Programming Language :: Python
 Programming Language :: Python :: 3
-Programming Language :: Python :: 3.6
 Programming Language :: Python :: 3.7
+Programming Language :: Python :: 3.8
+Programming Language :: Python :: 3.9
 Topic :: Software Development :: Testing
-Framework :: Robot Framework
-Framework :: Robot Framework :: Library
 """.strip().splitlines()
 
 setup(
-    name="robotframework-%s" % LIBRARY_NAME.lower(),
+    name="processcdb",
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
-    description="SeleniunTestability library that helps speed up tests with" "asyncronous evens",
+    description="Front-end to process compile_commands.json file and run various static analysis tools against it",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/rasjani/robotframework-%s" % LIBRARY_NAME.lower(),
+    url="https://github.com/rasjani/processcdb",
     author="Jani Mikkonen",
-    author_email="jani.mikkonen@rasjani.com",
+    author_email="jani.mikkonen@gmail.com",
     license="Apache License 2.0",
     classifiers=CLASSIFIERS,
     install_requires=REQUIREMENTS,
-    keywords="robot framework testing automation selenium seleniumlibrary"
-    "testability async javascript softwaretesting",
+    keywords="staticanalysis frontend clang cppcheck clangtidy compile_commands.json",
     platforms="any",
-    packages=[LIBRARY_NAME],
     package_dir={"": "src"},
-    package_data={"": ["js/*.*"]},
+    entry_points={
+        'console_scripts': ['processcdb = processcdb.__main__:main'],
+    }
 )

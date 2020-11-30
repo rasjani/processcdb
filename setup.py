@@ -6,7 +6,7 @@ processcdb
 import versioneer
 from os.path import abspath, dirname, join
 from setuptools import setup
-
+PACKAGE_NAME="processcdb"
 CWD = abspath(dirname(__file__))
 with open(join(CWD, "requirements.txt"), encoding="utf-8") as f:
     REQUIREMENTS = f.read().splitlines()
@@ -29,7 +29,7 @@ Topic :: Software Development :: Testing
 """.strip().splitlines()
 
 setup(
-    name="processcdb",
+    name=PACKAGE_NAME,
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     description="Front-end to process compile_commands.json file and run various static analysis tools against it",
@@ -43,6 +43,7 @@ setup(
     install_requires=REQUIREMENTS,
     keywords="staticanalysis frontend clang cppcheck clangtidy compile_commands.json",
     platforms="any",
+    packages=[PACKAGE_NAME],
     package_dir={"": "src"},
     entry_points={
         'console_scripts': ['processcdb = processcdb.__main__:main'],

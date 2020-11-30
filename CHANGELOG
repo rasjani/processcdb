@@ -1,0 +1,6 @@
+* Sun Nov 29 2020 Jani Mikkonen <jani.mikkonen@gmail.com> - 0.1.0
+- Full rewrite (rev.95577501)
+- Fixing and converting everything to python3 (rev.8da3d1ec)
+- Initial import (rev.27b1b65e)
+
+

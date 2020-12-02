@@ -1,3 +1,4 @@
+wheel
 versioneer
 twine
 m2r

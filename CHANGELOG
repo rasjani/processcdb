@@ -1,3 +1,6 @@
+* Wed Dec 02 2020 Jani Mikkonen <jani.mikkonen@gmail.com> - 0.1.2
+- Fixed commit filtering (rev.39bec1d8)
+
 * Mon Nov 30 2020 Jani Mikkonen <jani.mikkonen@gmail.com> - 0.1.1
 - Fixed python packaging (rev.6b99ec71)
 

@@ -56,10 +56,10 @@ def remove_untouched_files(cdb, commits):
 
     patch = None
     repo = Repo(".", search_parent_directories=True)
-
-    try:
+    commits = list(filter(None, commits))
+    if len(commits)==2:
         patch = parse_patch(repo.git.diff(commits[0], commits[1]))
-    except:
+    else:
         patch = parse_patch(repo.git.diff(f"{commits[0]}^"))
     new_cdb = []
     base_dir = Path(repo.git_dir).parent

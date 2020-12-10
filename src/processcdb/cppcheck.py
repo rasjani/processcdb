@@ -15,9 +15,10 @@ class CppCheck(Tool):
             "binary": self.tool_name,
             "file_blacklist": "",
             "jobs": 0,
-            "system_includes": "",
+            "default_includes": "",
             "supression_file": "",
             "default_args": "",
+            "includes_as_system": "",
         }
         return cfg[self.tool_name]
 
@@ -53,7 +54,7 @@ class CppCheck(Tool):
                 temp_name_includes = t.name
                 for line in list(set(all_includes)):
                     t.write(f"{line[:2]}\n")
-                for line in self.system_includes():
+                for line in self.default_includes():
                     t.write(f"{line}\n")
             except:
                 pass

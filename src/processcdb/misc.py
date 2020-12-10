@@ -31,7 +31,7 @@ def is_mac():
     return "Darwin" in platform.system()
 
 
-def capture_output(args, captureErr=True, capture_exceptions=False):
+def capture_output(args, captureErr=True, capture_exceptions=True):
     buff = ""
     params = {"shell": True, "universal_newlines": True}
     if captureErr:
@@ -39,6 +39,7 @@ def capture_output(args, captureErr=True, capture_exceptions=False):
     try:
         buff = subprocess.check_output(args, **params)
     except subprocess.CalledProcessError as e:
+        buff = e.stdout
         if capture_exceptions:
             with open("error.log", "a") as f:
                 f.write(f"ARGUMENTS: {args}\n")
@@ -57,7 +58,7 @@ def remove_untouched_files(cdb, commits):
     patch = None
     repo = Repo(".", search_parent_directories=True)
     commits = list(filter(None, commits))
-    if len(commits)==2:
+    if len(commits) == 2:
         patch = parse_patch(repo.git.diff(commits[0], commits[1]))
     else:
         patch = parse_patch(repo.git.diff(f"{commits[0]}^"))

@@ -116,13 +116,14 @@ class ClangTidy(Tool):
             compiler = Path(full_command[0]).name.lower()
 
             arguments.extend(self.quote_defines(self.filter_arguments(full_command[1:])))
-            arguments.extend(map(lambda str: f"-I{str}", self.system_includes()))
+            arguments = self.convert_includes(arguments)
+            arguments.extend(self.includes_as_cli_flags(self.default_includes()))
 
             extra = "--quiet"
             if compiler == "cl.exe":
                 arguments = list(map(self.convert_arguments, arguments))
                 extra = f"{extra} --extra-arg-before=--driver-mode=cl"
-                if "-EHsc" in arguments:
+                if "-EHsc" in arguments or "/EHsc" in arguments:
                     arguments.extend(["-Xclang", "-fcxx-exceptions"])  # Because clang ignores thread enabling ..
 
             if absolute_filename.is_file():

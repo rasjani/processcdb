@@ -9,6 +9,7 @@ from pathlib import Path
 from .logger import LOGGER as log
 import shutil
 import shlex
+from fnmatch import fnmatch
 
 
 class Tool(object):
@@ -22,8 +23,9 @@ class Tool(object):
             "file_blacklist": "",
             "arg_blacklist": "",
             "jobs": 0,
-            "system_includes": "",
+            "default_includes": "",
             "default_args": "",
+            "includes_as_system": "",
         }
         return cfg[self.tool_name]
 
@@ -53,11 +55,10 @@ class Tool(object):
 
         if is_any_windows():
             if " " in tool_name:
-                tool_name = f'"{tool_name}"' ## Why oh why doesnt shlex.quote() use " on windows wtf?
+                tool_name = f'"{tool_name}"'  # Why oh why doesnt shlex.quote() use " on windows wtf?
         else:
             tool_name = shlex.quote(tool_name)
         return tool_name
-
 
     def max_tasks(self, args, total_tasks=0):
         default_jobs = int(self.config["jobs"])
@@ -74,12 +75,12 @@ class Tool(object):
             log.warning(f"Requesting {default_jobs} concurrent processing jobs is higher than current {cpu_count} core count ")
         return default_jobs
 
-    def system_includes(self):
+    def default_includes(self):
         def clean(str):
             return str.replace("(framework directory)", "").strip()
 
         includes = []
-        includes_from_config = self.config["system_includes"]
+        includes_from_config = self.config["default_includes"]
 
         if includes_from_config == "env":
             includes = os.environ.get("INCLUDE", "").split(";")
@@ -91,7 +92,7 @@ class Tool(object):
         else:
             includes = includes_from_config.split(";")
 
-        return filter(None, includes)
+        return list(filter(None, includes))
 
     def tool_exists(self):
         return shutil.which(self.config["binary"]) is not None
@@ -110,8 +111,8 @@ class Tool(object):
         # Needs a rewrite
         res = False
         patterns = files if isinstance(files, list) else [files]
-        blacklisted = any(filename.match(pattern) for pattern in self.prevent_scan)
-        requested = any(filename.match(str(pattern)) for pattern in patterns)
+        blacklisted = any([fnmatch(filename, pattern) for pattern in self.prevent_scan])
+        requested = any([fnmatch(filename, pattern) for pattern in patterns])
         if requested:
             if blacklisted:
                 log.debug(f"File {filename} is blacklisted but requested to be scanned.")
@@ -127,3 +128,22 @@ class Tool(object):
     def run(self, command_line):
         log.debug(f"RUN: {command_line}")
         return subprocess.call(command_line, shell=True)
+
+    def include_string(self, include_path, path_matchers):
+        if any([fnmatch(include_path, pattern) for pattern in path_matchers]):
+            return f'-isystem "{include_path}"'
+        else:
+            return f"-I{include_path}"
+
+    def includes_as_cli_flags(self, includes):
+        path_matchers = self.config["includes_as_system"].split(";")
+        return list(map(lambda i: self.include_string(i, path_matchers), includes))
+
+    def convert_includes(self, arguments):
+        def convert(arg, path_matchers):
+            if arg and arg.startswith("-I"):
+                return self.include_string(arg[2:], path_matchers)
+            return arg
+
+        path_matchers = self.config["includes_as_system"].split(";")
+        return list(map(lambda arg: convert(arg, path_matchers), arguments))

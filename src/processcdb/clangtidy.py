@@ -7,13 +7,19 @@ from xml.sax.saxutils import escape
 from pathlib import Path
 import tempfile
 import os
-from queue import Queue
-import threading
+import concurrent.futures
 import shutil
+import signal
 from .logger import LOGGER as log
 from .toolbase import Tool
 from .tidy_converter import OutputParser
 
+list_of_futures = []
+
+def inthandler(a1, a2):
+    global list_of_futures
+    for i in list_of_futures:
+        i.cancel()
 
 class ClangTidy(Tool):
     def convert_arguments(self, arg):
@@ -87,24 +93,16 @@ class ClangTidy(Tool):
         with open(filename, "w") as f:
             f.write(prettify(xml_root))
 
-    def process_queue(self, args, tmp_dir, queue):
-        while True:
-            cmd = queue.get()
-            output = self.capture(cmd, True)
-            if output[0] == "":
-                output = output[1:]
+    def process_queue(self, cmd, tmp_dir):
+        output = self.capture(cmd, True)
+        if output[0] == "":
+            output = output[1:]
 
-            if output and tmp_dir:
-                with tempfile.NamedTemporaryFile(mode="w", dir=tmp_dir, suffix=".log", delete=False) as t:
-                    t.write("\n".join(output))
-            queue.task_done()
+        if output and tmp_dir:
+            with tempfile.NamedTemporaryFile(mode="w", dir=tmp_dir, suffix=".log", delete=False) as t:
+                t.write("\n".join(output))
 
-    def execute(self, cdb, args):
-
-        result = 1
-        if not self.tool_exists():
-            raise EnvironmentError(f"tool: {self.tool_name} not in path, cannot execute.")
-
+    def _generate_cmd_queue(self, cdb, args):
         command_queue = []
         for compilation_unit in cdb:
             arguments = []
@@ -129,25 +127,31 @@ class ClangTidy(Tool):
             if absolute_filename.is_file():
                 if self.should_scan(absolute_filename, args.file):
                     tmp_cmd = f"cd {directory} && {self.binary} {extra} {absolute_filename} -- {' '.join(arguments)}"
-                    log.debug(tmp_cmd)
                     command_queue.append(tmp_cmd)
                 else:
                     log.debug(f"File {absolute_filename} is not scanned")
+        return command_queue
+
+    def execute(self, cdb, args):
+
+        result = 1
+        if not self.tool_exists():
+            raise EnvironmentError(f"tool: {self.tool_name} not in path, cannot execute.")
+
+        command_queue = self._generate_cmd_queue(cdb, args)[0:30]
         try:
             tmp_dir = None
             if args.output is not None:
                 tmp_dir = Path(tempfile.mkdtemp())
 
             tasks = self.max_tasks(args, len(command_queue))
-            queue = Queue(tasks)
-            for _ in range(tasks):
-                thread_arguments = (args, None if not tmp_dir else str(tmp_dir), queue)
-                t = threading.Thread(target=self.process_queue, args=thread_arguments)
-                t.daemon = True
-                t.start()
-            for cmd in command_queue:
-                queue.put(cmd)
-            queue.join()
+            global list_of_futures
+            signal.signal(signal.SIGINT, inthandler)
+            with concurrent.futures.ProcessPoolExecutor(tasks) as executor:
+                for cmd in command_queue:
+                    log.debug(cmd)
+                    list_of_futures.append(executor.submit(self.process_queue, cmd, tmp_dir))
+
             if args.output is not None:
                 with open(args.output, "w") as dst:
                     for name in tmp_dir.glob("*.log"):

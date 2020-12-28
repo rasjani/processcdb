@@ -138,7 +138,7 @@ class ClangTidy(Tool):
         if not self.tool_exists():
             raise EnvironmentError(f"tool: {self.tool_name} not in path, cannot execute.")
 
-        command_queue = self._generate_cmd_queue(cdb, args)[0:30]
+        command_queue = self._generate_cmd_queue(cdb, args)
         try:
             tmp_dir = None
             if args.output is not None:

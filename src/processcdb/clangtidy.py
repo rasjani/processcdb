@@ -24,6 +24,10 @@ def inthandler(a1, a2):
         i.cancel()
 
 
+def process_cb(logline, future):
+    log.info(logline)
+
+
 class ClangTidy(Tool):
     def convert_arguments(self, arg):
         if arg.startswith("/"):
@@ -155,7 +159,7 @@ class ClangTidy(Tool):
             with concurrent.futures.ProcessPoolExecutor(tasks) as executor:
                 for cmd in command_queue:
                     future = executor.submit(self.process_queue, cmd, tmp_dir)
-                    future.add_done_callback(partial(log.debug, cmd))
+                    future.add_done_callback(partial(process_cb, cmd))
                     future = list_of_futures.append(future)
 
             log.info("Waiting for scanning processes to finish ..")

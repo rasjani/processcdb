@@ -154,7 +154,7 @@ class ClangTidy(Tool):
             log.info("Starting scanning ...")
             with concurrent.futures.ProcessPoolExecutor(tasks) as executor:
                 for cmd in command_queue:
-                    future = list_of_futures.append(executor.submit(self.process_queue, cmd, tmp_dir))
+                    future = executor.submit(self.process_queue, cmd, tmp_dir)
                     future.add_done_callback(partial(log.debug, cmd))
                     future = list_of_futures.append(future)
 

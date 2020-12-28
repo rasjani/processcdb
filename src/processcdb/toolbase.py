@@ -5,7 +5,6 @@ import multiprocessing
 import subprocess
 import configparser
 import os
-from pathlib import Path
 from .logger import LOGGER as log
 import shutil
 import shlex

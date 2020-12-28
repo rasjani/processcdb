@@ -8,6 +8,7 @@ from pathlib import Path
 import tempfile
 import os
 import concurrent.futures
+from functools import partial
 import shutil
 import signal
 from .logger import LOGGER as log
@@ -16,10 +17,12 @@ from .tidy_converter import OutputParser
 
 list_of_futures = []
 
+
 def inthandler(a1, a2):
     global list_of_futures
     for i in list_of_futures:
         i.cancel()
+
 
 class ClangTidy(Tool):
     def convert_arguments(self, arg):
@@ -151,32 +154,33 @@ class ClangTidy(Tool):
             log.info("Starting scanning ...")
             with concurrent.futures.ProcessPoolExecutor(tasks) as executor:
                 for cmd in command_queue:
-                    log.debug(cmd)
-                    list_of_futures.append(executor.submit(self.process_queue, cmd, tmp_dir))
+                    future = list_of_futures.append(executor.submit(self.process_queue, cmd, tmp_dir))
+                    future.add_done_callback(partial(log.debug, cmd))
+                    future = list_of_futures.append(future)
 
             log.info("Waiting for scanning processes to finish ..")
             concurrent.futures.wait(list_of_futures)
             log.info("Scanning done ...")
 
             if args.output is not None:
-                logger.debug("User requested output to {args.output}, scanning log files and saving ...")
+                log.debug("User requested output to {args.output}, scanning log files and saving ...")
                 with open(args.output, "w") as dst:
                     for name in tmp_dir.glob("*.log"):
                         dst.write(name.read_text())
 
                 if args.xml:
-                    logger.debug("User requested output as xml, converting ...")
+                    log.debug("User requested output as xml, converting ...")
                     self.format_output_to_xml(args.output, args.allow_dupes)
                 shutil.rmtree(tmp_dir)
-            logger.info("All done")
+            log.info("All done")
             result = 0
         except KeyboardInterrupt:
-            logger.debug("Keyboard interrupt!")
+            log.debug("Keyboard interrupt!")
             if tmp_dir is not None:
                 shutil.rmtree(tmp_dir)
             os.kill(0, 9)
         except Exception as e:  # TODO: Add proper exception handling
             log.error(f"Exception: {e} .-- ")
             result = 1
-        logger.info("All done")
+        log.info("All done")
         return result

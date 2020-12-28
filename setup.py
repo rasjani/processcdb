@@ -6,7 +6,7 @@ processcdb
 import versioneer
 from os.path import abspath, dirname, join
 from setuptools import setup
-PACKAGE_NAME="processcdb"
+PACKAGE_NAME = "processcdb"
 CWD = abspath(dirname(__file__))
 with open(join(CWD, "requirements.txt"), encoding="utf-8") as f:
     REQUIREMENTS = f.read().splitlines()

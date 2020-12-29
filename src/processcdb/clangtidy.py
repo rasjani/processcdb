@@ -25,7 +25,7 @@ def inthandler(a1, a2):
 
 
 def process_cb(logline, future):
-    log.info(logline)
+    log.debug(logline)
 
 
 class ClangTidy(Tool):

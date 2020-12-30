@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .misc import is_any_windows, capture_output
+from .misc import is_any_windows, capture_output, to_dict, to_list
 import multiprocessing
 import subprocess
 import configparser
@@ -16,11 +16,13 @@ class Tool(object):
     capture = staticmethod(capture_output)
 
     def default_config(self):
-        cfg = configparser.ConfigParser()
+        converters = {"list": to_list, "dict": to_dict}
+        cfg = configparser.ConfigParser(converters=converters)
         cfg[self.tool_name] = {
             "binary": self.tool_name,
             "file_blacklist": "",
             "arg_blacklist": "",
+            "arg_additions": "",
             "jobs": 0,
             "default_includes": "",
             "default_args": "",
@@ -43,7 +45,7 @@ class Tool(object):
     @property
     def prevent_scan(self):
         if self.config and "file_blacklist" in self.config:
-            return list(filter(None, self.config["file_blacklist"].split(";")))
+            return list(filter(None, self.config.getlist("file_blacklist")))
         return []
 
     @property
@@ -60,7 +62,7 @@ class Tool(object):
         return tool_name
 
     def max_tasks(self, args, total_tasks=0):
-        default_jobs = int(self.config["jobs"])
+        default_jobs = self.config.getint("jobs")
         cpu_count = multiprocessing.cpu_count()
         if args.jobs != 0:
             default_jobs = args.jobs
@@ -79,17 +81,15 @@ class Tool(object):
             return str.replace("(framework directory)", "").strip()
 
         includes = []
-        includes_from_config = self.config["default_includes"]
+        includes_from_config = self.config.getlist("default_includes")
 
-        if includes_from_config == "env":
+        if includes_from_config[0] == "env":
             includes = os.environ.get("INCLUDE", "").split(";")
-        elif includes_from_config == "detect" and not is_any_windows():
+        elif includes_from_config[0] == "detect" and not is_any_windows():
             results = self.capture("clang -x c++ -v -E /dev/null")
             sidx = results.index("#include <...> search starts here:") + 1
             eidx = results.index("End of search list.")
             includes = map(lambda str: clean(str), results[sidx:eidx])
-        else:
-            includes = includes_from_config.split(";")
 
         return list(filter(None, includes))
 
@@ -135,7 +135,7 @@ class Tool(object):
             return f"-I{include_path}"
 
     def includes_as_cli_flags(self, includes):
-        path_matchers = self.config["includes_as_system"].split(";")
+        path_matchers = self.config.getlist("includes_as_system")
         return list(map(lambda i: self.include_string(i, path_matchers), includes))
 
     def convert_includes(self, arguments):
@@ -144,5 +144,21 @@ class Tool(object):
                 return self.include_string(arg[2:], path_matchers)
             return arg
 
-        path_matchers = self.config["includes_as_system"].split(";")
+        path_matchers = self.config.getlist("includes_as_system")
         return list(map(lambda arg: convert(arg, path_matchers), arguments))
+
+
+    def filter_arguments(self, args):
+        def allowed_argument(arg):
+            return arg[1:] not in self.config.getlist("arg_blacklist")
+
+        return list(filter(allowed_argument, args[1:]))
+
+    def add_additions(self, args):
+        new_args = args.copy()
+        additions = self.config.getdict("arg_additions")
+        for arg in args:
+            key = arg[1:]
+            if key in additions:
+                new_args.extend(additions[key])
+        return new_args

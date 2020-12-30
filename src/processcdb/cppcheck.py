@@ -71,7 +71,7 @@ class CppCheck(Tool):
                     f"--file-list={temp_name_sources}",
                     f"-j {self.max_tasks(args, total_files)}",
                 ]
-                arguments.extend(self.config["default_args"].split(";"))
+                arguments.extend(self.config.getlist("default_args"))
                 suppressions = self.suppression_file()
                 if suppressions:
                     arguments.append(f"--suppressions-list={suppressions}")

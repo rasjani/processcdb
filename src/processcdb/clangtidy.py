@@ -34,12 +34,6 @@ class ClangTidy(Tool):
             return arg.replace("-", "/", 1)
         return arg
 
-    def filter_arguments(self, args):
-        def allowed_argument(arg):
-            return arg[1:] not in self.config["arg_blacklist"].split(";")
-
-        return list(filter(allowed_argument, args[1:]))
-
     def format_output_to_xml(self, filename, allow_dupes=True):
         def prettify(elem):
             rough_string = ElementTree.tostring(elem, "utf-8")
@@ -114,13 +108,15 @@ class ClangTidy(Tool):
         for compilation_unit in cdb:
             arguments = []
 
-            arguments.extend(self.config["default_args"].split(";"))
+            arguments.extend(self.config.getlist("default_args"))
             directory = Path(compilation_unit["directory"]).absolute()
             full_command = compilation_unit["command"].split(" ")
             absolute_filename = directory / compilation_unit["file"]
             compiler = Path(full_command[0]).name.lower()
 
-            arguments.extend(self.quote_defines(self.filter_arguments(full_command[1:])))
+            arguments.extend(self.quote_defines(full_command[1:]))
+            arguments = self.add_additions(arguments)
+            arguments = self.filter_arguments(arguments)
             arguments = self.convert_includes(arguments)
             arguments.extend(self.includes_as_cli_flags(self.default_includes()))
 
@@ -128,6 +124,7 @@ class ClangTidy(Tool):
             if compiler == "cl.exe":
                 arguments = list(map(self.convert_arguments, arguments))
                 extra = f"{extra} --extra-arg-before=--driver-mode=cl"
+                # TODO: Abstract and move the idea to be based on config file.
                 if "-EHsc" in arguments or "/EHsc" in arguments:
                     arguments.extend(["-Xclang", "-fcxx-exceptions"])  # Because clang ignores thread enabling ..
 
@@ -140,7 +137,6 @@ class ClangTidy(Tool):
         return command_queue
 
     def execute(self, cdb, args):
-
         result = 1
         if not self.tool_exists():
             raise EnvironmentError(f"tool: {self.tool_name} not in path, cannot execute.")
@@ -167,7 +163,7 @@ class ClangTidy(Tool):
             log.info("Scanning done ...")
 
             if args.output is not None:
-                log.debug("User requested output to {args.output}, scanning log files and saving ...")
+                log.debug(f"User requested output to {args.output}, scanning log files and saving ...")
                 with open(args.output, "w") as dst:
                     for name in tmp_dir.glob("*.log"):
                         dst.write(name.read_text())

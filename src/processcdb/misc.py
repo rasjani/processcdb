@@ -6,6 +6,7 @@ from pathlib import Path
 from whatthepatch import parse_patch
 from git import Repo
 from appdirs import AppDirs
+from collections import ChainMap
 import argparse
 from ._version import get_versions
 from .logger import LOGGER as log, LOG_LEVELS  # noqa: F401
@@ -91,6 +92,7 @@ def remove_dupes(cdb):
 
 
 def argument_parser(tools):
+    # TODO: Offload tool specific argument to the tool class itself if possible.
     app_dirs = AppDirs("processcdb", __author__)
     default_config_file = Path(app_dirs.user_config_dir) / "processcdb.ini"
     parser = argparse.ArgumentParser(description="Static analysis wrapper", epilog=f"Available tools: \n{','.join(tools.keys())}")
@@ -195,3 +197,14 @@ def argument_parser(tools):
         "-l", "--loglevel", default="info", dest="loglevel", choices=list(LOG_LEVELS.keys())[1:], help="Log Level"
     )
     return parser
+
+
+def to_list(value):
+    return value.split(";")
+
+
+def to_dict(value):
+    def format(val):
+        k,v = val.split("=", 2)
+        return {k: v.split(",")}
+    return dict(ChainMap(*map(format, to_list(value))))

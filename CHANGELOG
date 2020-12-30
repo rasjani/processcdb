@@ -1,3 +1,8 @@
+* Wed Dec 30 2020 Jani Mikkonen <jani.mikkonen@varjo.com> - 0.1.10
+- Fixes to argument handling. (rev.dfc2ff9c)
+- General documentation in README (rev.23e4dad5)
+- Support for conditional arguments to tool (rev.1d7e51b5)
+
 * Mon Dec 28 2020 Jani Mikkonen <jani.mikkonen@varjo.com> - 0.1.9
 
 * Mon Dec 28 2020 Jani Mikkonen <jani.mikkonen@varjo.com> - 0.1.8

@@ -200,11 +200,17 @@ def argument_parser(tools):
 
 
 def to_list(value):
-    return value.split(";")
+    try:
+        return value.split(";")
+    except:
+        return []
 
 
 def to_dict(value):
     def format(val):
         k,v = val.split("=", 2)
         return {k: v.split(",")}
-    return dict(ChainMap(*map(format, to_list(value))))
+    try:
+        return dict(ChainMap(*map(format, to_list(value))))
+    except:
+        return {}

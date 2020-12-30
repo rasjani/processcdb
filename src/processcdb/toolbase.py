@@ -152,7 +152,7 @@ class Tool(object):
         def allowed_argument(arg):
             return arg[1:] not in self.config.getlist("arg_blacklist")
 
-        return list(filter(allowed_argument, args[1:]))
+        return list(filter(allowed_argument, args))
 
     def add_additions(self, args):
         new_args = args.copy()

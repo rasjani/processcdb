@@ -31,7 +31,7 @@ def process_cb(logline, future):
 class ClangTidy(Tool):
     def convert_arguments(self, arg):
         if arg.startswith("/"):
-            return arg.replace("-", "/", 1)
+            return arg.replace("/", "-", 1)
         return arg
 
     def format_output_to_xml(self, filename, allow_dupes=True):
@@ -108,29 +108,29 @@ class ClangTidy(Tool):
         for compilation_unit in cdb:
             arguments = []
 
-            arguments.extend(self.config.getlist("default_args"))
             directory = Path(compilation_unit["directory"]).absolute()
             full_command = compilation_unit["command"].split(" ")
             absolute_filename = directory / compilation_unit["file"]
             compiler = Path(full_command[0]).name.lower()
 
-            arguments.extend(self.quote_defines(full_command[1:]))
-            arguments = self.add_additions(arguments)
-            arguments = self.filter_arguments(arguments)
-            arguments = self.convert_includes(arguments)
-            arguments.extend(self.includes_as_cli_flags(self.default_includes()))
+            defaults = self.config.getlist("default_args")
 
             extra = "--quiet"
             if compiler == "cl.exe":
-                arguments = list(map(self.convert_arguments, arguments))
                 extra = f"{extra} --extra-arg-before=--driver-mode=cl"
 
             if absolute_filename.is_file():
                 if self.should_scan(absolute_filename, args.file):
+                    arguments.extend(self.config.getlist("default_args"))
+                    arguments.extend(self.quote_defines(full_command[1:]))
+                    arguments = self.add_additions(arguments)
+                    arguments = self.filter_arguments(arguments)
+                    arguments = self.convert_includes(arguments)
+                    arguments.extend(self.includes_as_cli_flags(self.default_includes()))
                     tmp_cmd = f"cd {directory} && {self.binary} {extra} {absolute_filename} -- {' '.join(arguments)}"
                     command_queue.append(tmp_cmd)
                 else:
-                    log.debug(f"File {absolute_filename} is not scanned")
+                    log.debug(f"File {absolute_filename} is not scanned")
         return command_queue
 
     def execute(self, cdb, args):

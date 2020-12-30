@@ -124,9 +124,6 @@ class ClangTidy(Tool):
             if compiler == "cl.exe":
                 arguments = list(map(self.convert_arguments, arguments))
                 extra = f"{extra} --extra-arg-before=--driver-mode=cl"
-                # TODO: Abstract and move the idea to be based on config file.
-                if "-EHsc" in arguments or "/EHsc" in arguments:
-                    arguments.extend(["-Xclang", "-fcxx-exceptions"])  # Because clang ignores thread enabling ..
 
             if absolute_filename.is_file():
                 if self.should_scan(absolute_filename, args.file):

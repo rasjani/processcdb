@@ -116,6 +116,9 @@ class ClangTidy(Tool):
             defaults = self.config.getlist("default_args")
 
             extra = "--quiet"
+            if args.vfsoverlay.is_file():
+                extra = f"{extra} --vfsoverlay={args.vfsoverlay.resolve()}"
+
             if compiler == "cl.exe":
                 extra = f"{extra} --extra-arg-before=--driver-mode=cl"
 

@@ -125,6 +125,15 @@ def argument_parser(tools):
         type=Path,
         help=f"Absolute path to a file where default configurations are loaded from. Default: {default_config_file}",
     )
+    parser.add_argument(
+        "--vfsoverlay",
+        action="store",
+        dest="vfsoverlay",
+        metavar="f",
+        type=Path,
+        default=Path("vfsoverlayjson"),
+        help="Full name with path to possible vfsoverlay file to pass to clang-tidy.",
+    )
     xml = parser.add_mutually_exclusive_group()
     xml.add_argument(
         "--xml", dest="xml", action="store_true", help="If the tool allows, generate report in XML, defaults to plaintext"

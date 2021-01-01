@@ -4,3 +4,4 @@ venv/
 dist/
 *.egg-info/
 *.ini
+*.xml

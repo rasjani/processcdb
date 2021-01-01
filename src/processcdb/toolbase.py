@@ -129,24 +129,36 @@ class Tool(object):
         return subprocess.call(command_line, shell=True)
 
     def include_string(self, include_path, path_matchers):
-        if any([fnmatch(include_path, pattern) for pattern in path_matchers]):
+        if len(path_matchers[0]) > 0 and any([fnmatch(include_path, pattern) for pattern in path_matchers]):
             return f'-isystem "{include_path}"'
         else:
-            return f"-I{include_path}"
+            return f'-I"{include_path}"'
 
     def includes_as_cli_flags(self, includes):
         path_matchers = self.config.getlist("includes_as_system")
         return list(map(lambda i: self.include_string(i, path_matchers), includes))
 
     def convert_includes(self, arguments):
-        def convert(arg, path_matchers):
-            if arg and arg.startswith("-I"):
-                return self.include_string(arg[2:], path_matchers)
-            return arg
+        def convert(arg, foundInclude, path_matchers):
+            if foundInclude:
+                foundInclude = False
+                return self.include_string(arg, path_matchers), foundInclude
+            elif arg and arg.startswith("-I"):
+                foundInclude = True
+                return None, foundInclude
+            return arg, foundInclude
 
+        foundInclude = False
         path_matchers = self.config.getlist("includes_as_system")
-        return list(map(lambda arg: convert(arg, path_matchers), arguments))
-
+        
+        result = []
+        for arg in arguments:
+            converted = convert(arg, foundInclude, path_matchers)
+            if converted[0] != None:
+                result.append(converted[0])
+            foundInclude = converted[1]
+        
+        return result
 
     def filter_arguments(self, args):
         def allowed_argument(arg):

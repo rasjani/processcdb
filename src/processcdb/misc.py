@@ -8,8 +8,8 @@ from git import Repo
 from appdirs import AppDirs
 from collections import ChainMap
 import argparse
-from ._version import get_versions
-from .logger import LOGGER as log, LOG_LEVELS  # noqa: F401
+from _version import get_versions
+from logger import LOGGER as log, LOG_LEVELS  # noqa: F401
 
 __author__ = "Jani Mikkonen"
 __email__ = "jani.mikkonen@gmail.com"

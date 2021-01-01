@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .toolbase import Tool
+from toolbase import Tool
 import tempfile
 import os
 

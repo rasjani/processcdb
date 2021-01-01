@@ -3,10 +3,10 @@
 import sys
 import json
 import traceback
-from .cdb_tools import TOOLS
-from .misc import remove_untouched_files, remove_dupes, argument_parser
+from cdb_tools import TOOLS
+from misc import remove_untouched_files, remove_dupes, argument_parser
 from configparser import ConfigParser
-from .logger import LOGGER as log, LOG_LEVELS
+from logger import LOGGER as log, LOG_LEVELS
 
 
 def main():

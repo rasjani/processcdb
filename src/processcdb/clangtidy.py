@@ -11,9 +11,9 @@ import concurrent.futures
 from functools import partial
 import shutil
 import signal
-from .logger import LOGGER as log
-from .toolbase import Tool
-from .tidy_converter import OutputParser
+from logger import LOGGER as log
+from toolbase import Tool
+from tidy_converter import OutputParser
 
 list_of_futures = []
 

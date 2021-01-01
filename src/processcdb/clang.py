@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from .misc import is_any_windows
-from .toolbase import Tool
+from misc import is_any_windows
+from toolbase import Tool
 
 
 class Clang(Tool):

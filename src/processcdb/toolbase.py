@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from .misc import is_any_windows, capture_output, to_dict, to_list
+from misc import is_any_windows, capture_output, to_dict, to_list
 import multiprocessing
 import subprocess
 import configparser
 import os
-from .logger import LOGGER as log
+from logger import LOGGER as log
 import shutil
 import shlex
 from fnmatch import fnmatch

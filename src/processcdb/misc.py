@@ -11,11 +11,6 @@ import argparse
 from _version import get_versions
 from logger import LOGGER as log, LOG_LEVELS  # noqa: F401
 
-__author__ = "Jani Mikkonen"
-__email__ = "jani.mikkonen@gmail.com"
-__version__ = get_versions()["version"]
-
-
 def is_windows():
     return "WINDOWS" in platform.system().upper()
 
@@ -93,8 +88,7 @@ def remove_dupes(cdb):
 
 def argument_parser(tools):
     # TODO: Offload tool specific argument to the tool class itself if possible.
-    app_dirs = AppDirs("processcdb", __author__)
-    default_config_file = Path(app_dirs.user_config_dir) / "processcdb.ini"
+    default_config_file = "processcdb.ini"
     parser = argparse.ArgumentParser(description="Static analysis wrapper", epilog=f"Available tools: \n{','.join(tools.keys())}")
     parser.add_argument(
         "--cdb",

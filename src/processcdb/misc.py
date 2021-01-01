@@ -198,6 +198,9 @@ def to_list(value):
 
 
 def to_dict(value):
+    if value == None or value == '':
+        return None
+    
     def format(val):
         k,v = val.split("=", 2)
         return {k: v.split(",")}

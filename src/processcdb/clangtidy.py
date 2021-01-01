@@ -110,7 +110,7 @@ class ClangTidy(Tool):
 
             arguments.extend(self.config.getlist("default_args"))
             directory = Path(compilation_unit["directory"]).absolute()
-            full_command = compilation_unit["command"].split(" ")
+            full_command = compilation_unit["arguments"]
             absolute_filename = directory / compilation_unit["file"]
             compiler = Path(full_command[0]).name.lower()
 

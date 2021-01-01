@@ -157,8 +157,9 @@ class Tool(object):
     def add_additions(self, args):
         new_args = args.copy()
         additions = self.config.getdict("arg_additions")
-        for arg in args:
-            key = arg[1:]
-            if key in additions:
-                new_args.extend(additions[key])
+        if additions != None:
+            for arg in args:
+                key = arg[1:]
+                if key in additions:
+                    new_args.extend(additions[key])
         return new_args

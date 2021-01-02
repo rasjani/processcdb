@@ -4,10 +4,9 @@ import sys
 import json
 import traceback
 from cdb_tools import TOOLS
-from misc import remove_untouched_files, remove_dupes, argument_parser
+from misc import remove_dupes, argument_parser
 from configparser import ConfigParser
 from logger import LOGGER as log, LOG_LEVELS
-
 
 def main():
     args = argument_parser(TOOLS).parse_args()
@@ -40,7 +39,7 @@ def main():
         cdb = json.loads(args.cdb.read_text())
         if cdb:
             if args.commit_a is not None:
-                cdb = remove_untouched_files(cdb, (args.commit_a, args.commit_b))
+                #cdb = filterByChangelist(cdb, (args.commit_a, args.commit_b))
 
             if not args.allow_dupes:
                 cdb = remove_dupes(cdb)

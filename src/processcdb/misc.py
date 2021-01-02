@@ -3,9 +3,6 @@
 import platform
 import subprocess
 from pathlib import Path
-from whatthepatch import parse_patch
-from git import Repo
-from appdirs import AppDirs
 from collections import ChainMap
 import argparse
 from _version import get_versions
@@ -42,37 +39,6 @@ def capture_output(args, captureErr=True, capture_exceptions=True):
                 f.write(f"STDOUT: {e.stdout}\n")
                 f.write("---------------------------------------\n")
     return buff.split("\n")
-
-
-def remove_untouched_files(cdb, commits):
-    def modified_lines(data):
-        return data[0] is None and data[1] is not None
-
-    def line_numbers(data):
-        return data[1]
-
-    patch = None
-    repo = Repo(".", search_parent_directories=True)
-    commits = list(filter(None, commits))
-    if len(commits) == 2:
-        patch = parse_patch(repo.git.diff(commits[0], commits[1]))
-    else:
-        patch = parse_patch(repo.git.diff(f"{commits[0]}^"))
-    new_cdb = []
-    base_dir = Path(repo.git_dir).parent
-    lookup = {}
-    for i in cdb:
-        current = Path(i["directory"]) / i["file"]
-        lookup[current] = i
-
-    for diff in patch:
-        fullname = base_dir / diff.header.new_path
-        fullname = (base_dir / diff.header.new_path).absolute()
-        if fullname in lookup:
-            cdb_entry = lookup[fullname]
-            cdb_entry["changes_rows"] = map(line_numbers, filter(modified_lines, diff.changes))
-            new_cdb.append(cdb_entry)
-    return new_cdb
 
 
 def remove_dupes(cdb):

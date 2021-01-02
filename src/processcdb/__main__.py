@@ -38,7 +38,7 @@ def main():
     if args.cdb.is_file():
         cdb = json.loads(args.cdb.read_text())
         if cdb:
-            if args.commit_a is not None:
+            #if args.commit_a is not None:
                 #cdb = filterByChangelist(cdb, (args.commit_a, args.commit_b))
 
             if not args.allow_dupes:

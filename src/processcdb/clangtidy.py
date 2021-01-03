@@ -127,7 +127,8 @@ class ClangTidy(Tool):
 
             if absolute_filename.is_file():
                 if self.should_scan(absolute_filename, args.file):
-                    tmp_cmd = f"cd {directory} && {self.binary} {extra} {absolute_filename} -- {' '.join(arguments)}"
+                    absoluteBinaryPath = Path(self.binary).resolve()
+                    tmp_cmd = f"cd {directory} && {absoluteBinaryPath} {extra} {absolute_filename} -- {' '.join(arguments)}"
                     command_queue.append(tmp_cmd)
                 else:
                     log.debug(f"File {absolute_filename} is not scanned")

@@ -16,8 +16,10 @@ class Clang(Tool):
         if args.output is not None:
             arguments.extend([f"--output {args.output}"])
 
-        if is_any_windows():
-            arguments.extend([f"--use-analyzer {self.binary}"])
+        absoluteBinaryPath = Path(self.binary).resolve()
 
-        final_command = f"{self.binary} {' '.join(arguments)}"
+        if is_any_windows():
+            arguments.extend([f"--use-analyzer {absoluteBinaryPath}"])
+
+        final_command = f"{absoluteBinaryPath} {' '.join(arguments)}"
         return self.run(final_command)

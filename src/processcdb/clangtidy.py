@@ -108,7 +108,6 @@ class ClangTidy(Tool):
         for compilation_unit in cdb:
             arguments = []
 
-            arguments.extend(self.config.getlist("default_args"))
             directory = Path(compilation_unit["directory"]).absolute()
             full_command = compilation_unit["arguments"]
             absolute_filename = directory / compilation_unit["file"]
@@ -120,7 +119,8 @@ class ClangTidy(Tool):
             arguments = self.convert_includes(arguments)
             arguments.extend(self.includes_as_cli_flags(self.default_includes()))
 
-            extra = "--quiet"
+            default_args = self.config.getlist("default_args")
+            extra = f"--quiet {' '.join(default_args)}"
             if compiler == "cl.exe":
                 arguments = list(map(self.convert_arguments, arguments))
                 extra = f"{extra} --extra-arg-before=--driver-mode=cl"

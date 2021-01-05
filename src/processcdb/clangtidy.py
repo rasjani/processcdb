@@ -121,7 +121,7 @@ class ClangTidy(Tool):
 
             default_args = self.config.getlist("default_args")
             extra = f"--quiet {' '.join(default_args)}"
-            if compiler == "cl.exe":
+            if compiler.endswith("cl.exe"):
                 arguments = list(map(self.convert_arguments, arguments))
                 extra = f"{extra} --extra-arg-before=--driver-mode=cl"
 

@@ -11,9 +11,9 @@ import concurrent.futures
 from functools import partial
 import shutil
 import signal
-from .logger import LOGGER as log
-from .toolbase import Tool
-from .tidy_converter import OutputParser
+from logger import LOGGER as log
+from toolbase import Tool
+from tidy_converter import OutputParser
 
 list_of_futures = []
 
@@ -108,9 +108,8 @@ class ClangTidy(Tool):
         for compilation_unit in cdb:
             arguments = []
 
-            arguments.extend(self.config.getlist("default_args"))
             directory = Path(compilation_unit["directory"]).absolute()
-            full_command = compilation_unit["command"].split(" ")
+            full_command = compilation_unit["arguments"]
             absolute_filename = directory / compilation_unit["file"]
             compiler = Path(full_command[0]).name.lower()
 
@@ -120,14 +119,16 @@ class ClangTidy(Tool):
             arguments = self.convert_includes(arguments)
             arguments.extend(self.includes_as_cli_flags(self.default_includes()))
 
-            extra = "--quiet"
-            if compiler == "cl.exe":
+            default_args = self.config.getlist("default_args")
+            extra = f"--quiet {' '.join(default_args)}"
+            if compiler.endswith("cl.exe"):
                 arguments = list(map(self.convert_arguments, arguments))
                 extra = f"{extra} --extra-arg-before=--driver-mode=cl"
 
             if absolute_filename.is_file():
                 if self.should_scan(absolute_filename, args.file):
-                    tmp_cmd = f"cd {directory} && {self.binary} {extra} {absolute_filename} -- {' '.join(arguments)}"
+                    absoluteBinaryPath = Path(self.binary).resolve()
+                    tmp_cmd = f"cd {directory} && {absoluteBinaryPath} {extra} {absolute_filename} -- {' '.join(arguments)}"
                     command_queue.append(tmp_cmd)
                 else:
                     log.debug(f"File {absolute_filename} is not scanned")

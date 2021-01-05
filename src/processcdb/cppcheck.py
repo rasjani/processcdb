@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .toolbase import Tool
+from toolbase import Tool
 import os
 import tempfile
 import configparser
@@ -80,7 +80,8 @@ class CppCheck(Tool):
                     arguments.extend(["--xml", "--xml-version=2"])
 
                 if os.path.isfile(temp_name_includes) and os.path.isfile(temp_name_sources):
-                    tmp_cmd = f"{self.binary} {' '.join(arguments)}"
+                    absoluteBinaryPath = Path(self.binary).resolve()
+                    tmp_cmd = f"{absoluteBinaryPath} {' '.join(arguments)}"
                     if args.output is not None:
                         final_command = f"{tmp_cmd} 2> {args.output}"
                     else:

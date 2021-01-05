@@ -3,18 +3,10 @@
 import platform
 import subprocess
 from pathlib import Path
-from whatthepatch import parse_patch
-from git import Repo
-from appdirs import AppDirs
 from collections import ChainMap
 import argparse
-from ._version import get_versions
-from .logger import LOGGER as log, LOG_LEVELS  # noqa: F401
-
-__author__ = "Jani Mikkonen"
-__email__ = "jani.mikkonen@gmail.com"
-__version__ = get_versions()["version"]
-
+from _version import get_versions
+from logger import LOGGER as log, LOG_LEVELS  # noqa: F401
 
 def is_windows():
     return "WINDOWS" in platform.system().upper()
@@ -49,37 +41,6 @@ def capture_output(args, captureErr=True, capture_exceptions=True):
     return buff.split("\n")
 
 
-def remove_untouched_files(cdb, commits):
-    def modified_lines(data):
-        return data[0] is None and data[1] is not None
-
-    def line_numbers(data):
-        return data[1]
-
-    patch = None
-    repo = Repo(".", search_parent_directories=True)
-    commits = list(filter(None, commits))
-    if len(commits) == 2:
-        patch = parse_patch(repo.git.diff(commits[0], commits[1]))
-    else:
-        patch = parse_patch(repo.git.diff(f"{commits[0]}^"))
-    new_cdb = []
-    base_dir = Path(repo.git_dir).parent
-    lookup = {}
-    for i in cdb:
-        current = Path(i["directory"]) / i["file"]
-        lookup[current] = i
-
-    for diff in patch:
-        fullname = base_dir / diff.header.new_path
-        fullname = (base_dir / diff.header.new_path).absolute()
-        if fullname in lookup:
-            cdb_entry = lookup[fullname]
-            cdb_entry["changes_rows"] = map(line_numbers, filter(modified_lines, diff.changes))
-            new_cdb.append(cdb_entry)
-    return new_cdb
-
-
 def remove_dupes(cdb):
     seen = []
     new_cdb = []
@@ -93,8 +54,7 @@ def remove_dupes(cdb):
 
 def argument_parser(tools):
     # TODO: Offload tool specific argument to the tool class itself if possible.
-    app_dirs = AppDirs("processcdb", __author__)
-    default_config_file = Path(app_dirs.user_config_dir) / "processcdb.ini"
+    default_config_file = "processcdb.ini"
     parser = argparse.ArgumentParser(description="Static analysis wrapper", epilog=f"Available tools: \n{','.join(tools.keys())}")
     parser.add_argument(
         "--cdb",
@@ -204,6 +164,9 @@ def to_list(value):
 
 
 def to_dict(value):
+    if value == None or value == '':
+        return None
+    
     def format(val):
         k,v = val.split("=", 2)
         return {k: v.split(",")}

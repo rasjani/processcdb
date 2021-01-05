@@ -45,8 +45,8 @@ After a process of generating a compile_commands.json, you can run processcdb wi
 
     processcdb --tool clang-tidy
 
-This will try to locate the json file from current working directory and runs the tool, in this case
-clang-tidy, against all files that are compiled and not blacklisted in processcdb comfig file or in
+This will try to locate the json file from current working directory and runs the tool, in this case the 
+clang-tidy tool as defined in the config file, against all files that are compiled and not blacklisted in processcdb config file or in
 tools own configuration file and generates the output to standard output. If you need to run the tool when you
 don't have access to change the current working directory, you can pass `--cdb` and absolute location:
 
@@ -77,7 +77,7 @@ capture the standard output or provide `--config` parameter.
 ## Configuration file
 
 Each tool has a separate section and each section can be configured either in the tool specific section or
-in default. Minimal. single tool configuratio would look something like this:
+in default. The minimal single tool configuration would look something like this:
 
     [clang-tidy]
     binary=C:\llvm-11.0.0\bin\clang-tidy.exe
